@@ -1,19 +1,16 @@
-## BlockSmasher
+# BlockSmasher
 DEMO ACCOUNT:
 
 
-username: vanrave
+1.username: vanrave
+2.password: 123123
+3.username: vanravegwapo
+4.password: 123123
 
-password: 123123
-
-username: vanravegwapo
-
-password: 123123
-
-#GroupGwapo
-Joenz
-Van Rave
-Marshall
+##GroupGwapo
+1.Joenz
+2.Van Rave
+3.Marshall
 
 
 ![video](https://github.com/xarenav/BlockSmasher/blob/856dc59a558e32481d3b6caf28f461fe444294e1/2025-11-18%2019-50-46.mp4)

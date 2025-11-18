@@ -1,9 +1,3 @@
-"""
-BLOCK SMASHER - Python/Pygame Final Edition
-Optimized for 1024x768 Resolution
-Complete with Login System and Real Leaderboard
-"""
-
 import pygame
 import random
 import math

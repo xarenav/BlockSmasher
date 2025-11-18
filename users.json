@@ -1,0 +1,20 @@
+{
+  "VanraveGwaps": {
+    "username": "VanraveGwaps",
+    "password_hash": "96cae35ce8a9b0244178bf28e4966c2ce1b8385723a96a6b838858cdd6ca0a1e",
+    "high_score": 0,
+    "levels_completed": []
+  },
+  "vanravegwapo": {
+    "username": "vanravegwapo",
+    "password_hash": "96cae35ce8a9b0244178bf28e4966c2ce1b8385723a96a6b838858cdd6ca0a1e",
+    "high_score": 2400,
+    "levels_completed": []
+  },
+  "vanrave": {
+    "username": "vanrave",
+    "password_hash": "96cae35ce8a9b0244178bf28e4966c2ce1b8385723a96a6b838858cdd6ca0a1e",
+    "high_score": 7000,
+    "levels_completed": []
+  }
+}

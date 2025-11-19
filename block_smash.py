@@ -1,11 +1,12 @@
 """
-BLOCK SMASHER v32
+BLOCK SMASHER v33
 A block-breaking game with powerups and procedurally generated levels
 Optimized for 1024x768 resolution
 
-v32 Changes:
-- Increased powerup drop probability from 20% to 40%
-- More frequent powerup drops for enhanced gameplay experience
+v33 Changes:
+- Removed shield powerup completely (caused paddle stuck issues)
+- Rebalanced powerup weights (Sticky Paddle and Extra Life increased to 10% each)
+- 6 powerup types remain: Multiball, Paddle Expand, Fireball, Laser, Extra Life, Sticky Paddle
 """
 
 import pygame
@@ -63,8 +64,7 @@ class PowerupType(Enum):
     FIREBALL = 3
     LASER = 4
     EXTRA_LIFE = 5
-    SHIELD = 6
-    STICKY_PADDLE = 7
+    STICKY_PADDLE = 6
 
 @dataclass
 class Block:
@@ -254,7 +254,7 @@ class DataManager:
 class BlockSmasher:
     def __init__(self):
         self.screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
-        pygame.display.set_caption("BLOCK SMASHER v32")
+        pygame.display.set_caption("BLOCK SMASHER v33")
         self.clock = pygame.time.Clock()
         self.running = True
         
@@ -305,7 +305,6 @@ class BlockSmasher:
         
         # Powerup states
         self.active_powerups: Dict[PowerupType, float] = {}
-        self.shield_active = False
         self.laser_active = False
         self.sticky_paddle_active = False
         self.laser_cooldown = 0
@@ -502,9 +501,8 @@ class BlockSmasher:
             PowerupType.MULTIBALL: 25,
             PowerupType.FIREBALL: 15,
             PowerupType.LASER: 10,
-            PowerupType.SHIELD: 10,
-            PowerupType.STICKY_PADDLE: 5,
-            PowerupType.EXTRA_LIFE: 5
+            PowerupType.STICKY_PADDLE: 10,
+            PowerupType.EXTRA_LIFE: 10
         }
         
         types = list(weights.keys())
@@ -567,13 +565,6 @@ class BlockSmasher:
             self.lives += 1
             self.score += 1000
         
-        elif powerup_type == PowerupType.SHIELD:
-            self.active_powerups[PowerupType.SHIELD] = 15.0
-            self.shield_active = True
-            self.paddle_width = CANVAS_WIDTH
-            self.paddle_x = 0
-            self.score += 400
-        
         elif powerup_type == PowerupType.STICKY_PADDLE:
             self.active_powerups[PowerupType.STICKY_PADDLE] = 10.0
             self.sticky_paddle_active = True
@@ -613,22 +604,12 @@ class BlockSmasher:
             del self.active_powerups[ptype]
             
             if ptype == PowerupType.PADDLE_EXPAND:
-                # Don't change paddle width if shield is active
-                if PowerupType.SHIELD not in self.active_powerups:
-                    self.paddle_width = self.paddle_base_width
+                self.paddle_width = self.paddle_base_width
             elif ptype == PowerupType.FIREBALL:
                 for ball in self.balls:
                     ball.is_fireball = False
             elif ptype == PowerupType.LASER:
                 self.laser_active = False
-            elif ptype == PowerupType.SHIELD:
-                self.shield_active = False
-                # Restore paddle position and width
-                self.paddle_x = CANVAS_WIDTH // 2 - self.paddle_base_width // 2
-                if PowerupType.PADDLE_EXPAND in self.active_powerups:
-                    self.paddle_width = self.paddle_base_width * 1.5
-                else:
-                    self.paddle_width = self.paddle_base_width
             elif ptype == PowerupType.STICKY_PADDLE:
                 self.sticky_paddle_active = False
     
@@ -645,7 +626,6 @@ class BlockSmasher:
         self.powerups = []
         self.lasers = []
         self.active_powerups = {}
-        self.shield_active = False
         self.laser_active = False
         self.sticky_paddle_active = False
         self.laser_cooldown = 0
@@ -682,8 +662,8 @@ class BlockSmasher:
         canvas_x = (SCREEN_WIDTH - CANVAS_WIDTH) // 2
         adjusted_mouse_x = self.mouse_x - canvas_x
         
-        # Update paddle position (unless shield is active)
-        if not self.shield_active and 0 <= adjusted_mouse_x <= CANVAS_WIDTH:
+        # Update paddle position
+        if 0 <= adjusted_mouse_x <= CANVAS_WIDTH:
             self.paddle_x = adjusted_mouse_x - self.paddle_width // 2
             self.paddle_x = max(0, min(self.paddle_x, CANVAS_WIDTH - self.paddle_width))
         
@@ -755,7 +735,7 @@ class BlockSmasher:
                 if ball.y > CANVAS_HEIGHT:
                     if len(self.balls) > 1:
                         self.balls.remove(ball)
-                    elif not self.shield_active:
+                    else:
                         self.lives -= 1
                         if self.lives <= 0:
                             self.game_over_type = 'defeat'
@@ -769,10 +749,6 @@ class BlockSmasher:
                             ball.vy = 0
                             ball.is_stuck = False
                             ball.is_fireball = False
-                    else:
-                        # Shield active - bounce ball back up
-                        ball.y = CANVAS_HEIGHT - 5
-                        ball.vy = -abs(ball.vy)
         
         # Update lasers
         for laser in self.lasers[:]:
@@ -870,7 +846,6 @@ class BlockSmasher:
             PowerupType.FIREBALL: COLOR_ORANGE,
             PowerupType.LASER: COLOR_YELLOW,
             PowerupType.EXTRA_LIFE: COLOR_PINK,
-            PowerupType.SHIELD: COLOR_CYAN,
             PowerupType.STICKY_PADDLE: (100, 200, 255)
         }
         
@@ -892,7 +867,6 @@ class BlockSmasher:
             PowerupType.FIREBALL: "F",
             PowerupType.LASER: "L",
             PowerupType.EXTRA_LIFE: "+",
-            PowerupType.SHIELD: "S",
             PowerupType.STICKY_PADDLE: "ST"
         }
         
@@ -1170,7 +1144,7 @@ class BlockSmasher:
         premium_text = self.font_tiny.render("PREMIUM EDITION", True, (*COLOR_FOREGROUND, 120))
         self.screen.blit(premium_text, (45, premium_y))
         
-        version_text = self.font_tiny.render("Version 32.0", True, (*COLOR_FOREGROUND, 80))
+        version_text = self.font_tiny.render("Version 33.0", True, (*COLOR_FOREGROUND, 80))
         self.screen.blit(version_text, (45, premium_y + 18))
         
         # TOP RIGHT ICONS
@@ -1357,9 +1331,7 @@ class BlockSmasher:
         # Draw paddle
         paddle_y = CANVAS_HEIGHT - 35
         paddle_color = COLOR_CYAN
-        if self.shield_active:
-            paddle_color = COLOR_YELLOW
-        elif self.sticky_paddle_active:
+        if self.sticky_paddle_active:
             paddle_color = (100, 200, 255)
         
         pygame.draw.rect(self.screen, paddle_color, 
@@ -1429,7 +1401,6 @@ class BlockSmasher:
                     PowerupType.PADDLE_EXPAND: "Expand",
                     PowerupType.FIREBALL: "Fireball",
                     PowerupType.LASER: "Laser",
-                    PowerupType.SHIELD: "Shield",
                     PowerupType.STICKY_PADDLE: "Sticky"
                 }
                 text = self.font_tiny.render(f"{names.get(ptype, '?')}: {int(time_left)}s", True, COLOR_CYAN)
